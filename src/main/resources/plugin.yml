@@ -1,0 +1,9 @@
+name: SpectatorPlugin
+version: ${project.version}
+main: me.dkflab.SpectatorPlugin.Main
+api-version: 1.16
+commands:
+  teammate:
+    description: Select a teammate
+    usage: /teammate <player>
+    aliases: [team]
