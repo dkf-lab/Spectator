@@ -74,9 +74,11 @@ public class Commands implements CommandExecutor {
                         return true;
                     }
                     // check if player has outgoing request
-                    if (!Main.requests.get((Player) sender).getName().equals(args[0])) {
-                        Utils.warn(sender, "Removing request to "+ Main.requests.get((Player) sender) + " and sending one to " + args[0] + " instead.");
-                        // no need to remove request from map as it will be overwritten
+                    if (Main.requests.get(sender) != null) {
+                        if (!Main.requests.get(sender).getName().equals(args[0])) {
+                            Utils.warn(sender, "Removing request to "+ Main.requests.get((Player) sender) + " and sending one to " + args[0] + " instead.");
+                            // no need to remove request from map as it will be overwritten
+                        }
                     }
                     // send request
                     Main.requests.put((Player)sender, all);

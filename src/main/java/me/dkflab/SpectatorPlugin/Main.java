@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -28,20 +29,54 @@ public final class Main extends JavaPlugin implements Listener {
         Player p = e.getEntity();
         if (isInTeam(p)) {
             p.setGameMode(GameMode.SPECTATOR);
+            Player teammate = getTeammate(p);
+            if (teammate.getGameMode().equals(GameMode.SPECTATOR)) {
+                //both dead
+                teammate.showPlayer(this, p);
+                p.showPlayer(this, teammate);
+                // send message to both
+                p.sendTitle(Utils.color("&c&lYOU DIED!"),Utils.color("&7Better luck next time."),20,20,20);
+                teammate.sendTitle(Utils.color("&c&lYOUR TEAMMATE DIED!"),Utils.color("&7You can freely spectate now."),20,20,20);
+                p.teleport(teammate);
+                return;
+            }
+            p.sendTitle(Utils.color("&c&lYOU DIED!"),Utils.color("&7Better luck next time."),20,20,20);
             p.setSpectatorTarget(getTeammate(p));
         }
     }
 
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        if (isInTeam(p)) {
+            // spectator
+            if (p.getGameMode().equals(GameMode.SPECTATOR)) {
+                if (getTeammate(p).getGameMode().equals(GameMode.SPECTATOR)) {
+                    return;
+                }
+                p.teleport(getTeammate(p));
+                p.hidePlayer(this, getTeammate(p));
+            }
+            // spectating player moving
+            if (getTeammate(p).getGameMode().equals(GameMode.SPECTATOR)) {
+                getTeammate(p).teleport(p);
+                getTeammate(p).hidePlayer(this, p);
+            }
+        }
+    }
     // team methods
 
     public static boolean areInTeam(Player one, Player two) {
         if (team == null) {
             return false;
         }
-        if (team.get(one).equals(two)) {
+        if (team.get(one)!=null&&team.get(one).equals(two)) {
             return true;
         }
-        return team.get(two).equals(one);
+        if (team.get(two)!=null&&team.get(two).equals(one)) {
+            return true;
+        }
+        return false;
     }
 
     public static boolean isInTeam(Player p) {
@@ -89,7 +124,7 @@ public final class Main extends JavaPlugin implements Listener {
 
     public static Player getTeammate(Player p) {
         for (Player two : Bukkit.getOnlinePlayers()) {
-            if (team.get(two).equals(p)) {
+            if (team.get(two)!=null&&team.get(two).equals(p)) {
                 return two;
             }
         }
